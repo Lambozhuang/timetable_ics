@@ -1,18 +1,29 @@
-import xlrd
+from imaplib import Time2Internaldate
+import openpyxl
 import datetime
 import time
 
-columnOfClassName = 0
-columnOfStartTime = 1
-columnOfEndTime = 2
-columnOfWeekDay = 3
-columnOfStartWeek = 4
-columnOfEndWeek = 5
-columnOfLocation = 6
-columnOfStartDate = 8
-_columnOfStartTime = 11
-_columnOfEndTime = 12
+# columnOfClassName = 0
+# columnOfStartTime = 1
+# columnOfEndTime = 2
+# columnOfWeekDay = 3
+# columnOfStartWeek = 4
+# columnOfEndWeek = 5
+# columnOfLocation = 6
+# columnOfStartDate = 8
+# _columnOfStartTime = 11
+# _columnOfEndTime = 12
 
+columnOfClassName = 1
+columnOfStartTime = 2
+columnOfEndTime = 3
+columnOfWeekDay = 4
+columnOfStartWeek = 5
+columnOfEndWeek = 6
+columnOfLocation = 7
+columnOfStartDate = 9
+_columnOfStartTime = 12
+_columnOfEndTime = 13
 
 # main
 
@@ -25,23 +36,32 @@ startWeekDate = ''
 numberOfClass = 0
 
 # 打开excel工作簿
-data = xlrd.open_workbook('timetable.xlsx')
-table = data.sheets()[0]
+data = openpyxl.load_workbook('timetable.xlsx')
+# table = data.sheets()[0]
+table = data.active
 
 # 读取学期第一周星期一开始日期
-startWeekDate = str(table.cell(1, columnOfStartDate).value)
+startWeekDate = str(table.cell(2, columnOfStartDate).value)
 startWeekDate = datetime.datetime.strptime(startWeekDate, '%Y%m%d')
 
+print(table.max_column)
+print(table.max_row)
+print(startWeekDate)
+
 # 读取课程数量和节数对应时间
-for i in range(1, table.nrows):
+for i in range(2, table.max_row + 1):
   tempList = []
   tempList.append(table.cell(i, _columnOfStartTime).value)
   tempList.append(table.cell(i, _columnOfEndTime).value)
-  timeMap[str(i)] = tempList
-  if table.cell(i, columnOfClassName).value != '':
+  # print(tempList)
+  if i < 14:
+    timeMap[str(i - 1)] = tempList
+  if table.cell(i, columnOfClassName).value != None:
     numberOfClass += 1
+
+print(numberOfClass)
   
-for i in range(1, numberOfClass + 1):
+for i in range(2, numberOfClass + 2):
   startWeek = int(table.cell(i, columnOfStartWeek).value)
   endWeek = int(table.cell(i, columnOfEndWeek).value)
   numberOfWeek = endWeek - startWeek + 1
@@ -53,6 +73,11 @@ for i in range(1, numberOfClass + 1):
   startDate = startWeekDate + datetime.timedelta((startWeek - 1) * 7 + weekDay - 1)
   date = startDate
   eventStr = ''
+  if location == None:
+    location = ""
+
+  print(startWeek)
+
   for j in range(0, numberOfWeek):
     temp = 'BEGIN:VEVENT\nTRANSP:OPAQUE\n'
     temp += 'DTSTART;TZID=Asia/Shanghai:'
