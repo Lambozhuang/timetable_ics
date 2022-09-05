@@ -1,4 +1,3 @@
-from imaplib import Time2Internaldate
 import openpyxl
 import datetime
 import time
